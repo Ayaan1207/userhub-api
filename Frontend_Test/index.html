@@ -1,0 +1,48 @@
+<ul id="userList"></ul>
+
+<script>
+async function fetchUsers() {
+  const res = await fetch("http://localhost:3000/api/users");
+  const users = await res.json();
+  const list = document.getElementById("userList");
+  list.innerHTML = "";
+  users.forEach((user) => {
+    const li = document.createElement("li");
+    li.textContent = `${user.name} (${user.email})`;
+
+    // Add Delete Button
+    const delBtn = document.createElement("button");
+    delBtn.textContent = "Delete";
+    delBtn.style.marginLeft = "10px";
+    delBtn.onclick = async () => {
+      await fetch(`http://localhost:3000/api/users/${user._id}`, {
+        method: "DELETE",
+      });
+      fetchUsers(); // refresh list
+    };
+
+    li.appendChild(delBtn);
+    list.appendChild(li);
+  });
+}
+
+// Fetch users on page load
+fetchUsers();
+
+// Add new user
+document.getElementById("userForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const name = document.getElementById("name").value;
+  const email = document.getElementById("email").value;
+
+  await fetch("http://localhost:3000/api/users", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name, email }),
+  });
+
+  document.getElementById("name").value = "";
+  document.getElementById("email").value = "";
+  fetchUsers(); // refresh list
+});
+</script>
